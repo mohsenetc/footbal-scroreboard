@@ -1,3 +1,5 @@
+import com.sportradar.model.Match;
+import com.sportradar.service.Scoreboard;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +22,7 @@ class ScoreboardTest {
         List<Match> matches = scoreboard.getMatches();
 
         assertEquals(1, matches.size());
-        Match match = matches.get(0);
+        Match match = matches.getFirst();
         assertEquals("Home Team", match.getHomeTeam());
         assertEquals("Away Team", match.getAwayTeam());
         assertEquals(0, match.getHomeScore());
@@ -32,7 +34,7 @@ class ScoreboardTest {
         scoreboard.startMatch("Home Team", "Away Team");
         scoreboard.updateScore("Home Team", 2, 3);
 
-        Match match = scoreboard.getMatches().get(0);
+        Match match = scoreboard.getMatches().getFirst();
         assertEquals(2, match.getHomeScore());
         assertEquals(3, match.getAwayScore());
     }
