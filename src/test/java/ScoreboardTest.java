@@ -17,13 +17,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class ScoreboardTest {
 
     private Scoreboard scoreboard;
-    private final Validator validator;
 
 
-    public ScoreboardTest() {
-        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
-            this.validator = factory.getValidator();
-        }
+    @Test
+    void testScoreboardConstructor() {
+        assertNotNull(scoreboard.getMatches(), "Matches should be initialized and not null");
+        assertTrue(scoreboard.getMatches().isEmpty(), "Matches should be empty upon initialization");
     }
 
     @BeforeEach
@@ -104,12 +103,13 @@ class ScoreboardTest {
 
     @Test
     void testAwayTeamNameCannotBeBlank() {
-        Match match = new Match("UK", ""); // Away team name is blank
-
-        Set<ConstraintViolation<Match>> violations = validator.validate(match);
-
-        assertEquals(1, violations.size());
-        assertEquals("Away team name cannot be blank", violations.iterator().next().getMessage());
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            Validator validator = factory.getValidator();
+            Match match = new Match("UK", ""); // Away team name is blank
+            Set<ConstraintViolation<Match>> violations = validator.validate(match);
+            assertEquals(1, violations.size());
+            assertEquals("Away team name cannot be blank", violations.iterator().next().getMessage());
+        }
     }
 
     @Test

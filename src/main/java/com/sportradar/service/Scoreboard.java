@@ -2,10 +2,7 @@ package com.sportradar.service;
 
 import com.sportradar.model.Match;
 import com.sportradar.model.NotValidMatchException;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
+import jakarta.validation.*;
 
 import java.util.*;
 
