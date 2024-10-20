@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main   # Change to your main branch if different
+      - springboot
   pull_request:
     branches:
       - main   # Change to your main branch if different
