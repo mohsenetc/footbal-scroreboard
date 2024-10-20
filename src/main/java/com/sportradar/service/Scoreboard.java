@@ -2,48 +2,62 @@ package com.sportradar.service;
 
 import com.sportradar.model.Match;
 import com.sportradar.model.NotValidMatchException;
-import jakarta.validation.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
+
 
 import java.util.*;
 
+@Service
 public class Scoreboard {
-    private final HashMap<String,Match> matches;
-    private final Validator validator; // Add a validator
+    private final HashMap<String, Match> matches;
+
+    @Autowired
+    private Validator validator;
+
 
     public Scoreboard() {
         this.matches = new LinkedHashMap<>();
-        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
-            this.validator = factory.getValidator();
-        }
     }
 
-    public void startMatch(String homeTeam, String awayTeam) throws NotValidMatchException {
-        Match match = new Match(homeTeam, awayTeam);
-        validateMatch(match);
-        matches.put(homeTeam, match);
-    }
-    private void validateMatch(Match match) throws NotValidMatchException {
-        Set<ConstraintViolation<Match>> violations = validator.validate(match);
-        if (!violations.isEmpty()) {
-            // Collect and throw the validation messages
-            StringBuilder message = new StringBuilder();
-            for (ConstraintViolation<Match> violation : violations) {
-                message.append(violation.getMessage()).append("; ");
-            }
-            throw new NotValidMatchException(message.toString());
-        }
+    public void startMatch(@Valid Match match) {
+        matches.put(match.getHomeTeam(), match);
     }
 
-    public void updateScore(String homeTeam, int homeScore, int awayScore) throws NotValidMatchException {
+    public void updateScore(String homeTeam,
+                            @Min(value = 0, message = "Home score must be zero or positive") int homeScore,
+                            @Min(value = 0, message = "Away score must be zero or positive") int awayScore)
+            throws NotValidMatchException {
+
+        // Validate scores
+        ScoreHolder scoreHolder = new ScoreHolder(homeScore, awayScore);
+        Errors errors = new BeanPropertyBindingResult(scoreHolder, "scoreHolder");
+        validator.validate(scoreHolder, errors);
+
+        if (errors.hasErrors()) {
+            throw new NotValidMatchException(errors.getAllErrors().getFirst().getDefaultMessage());
+        }
 
         Match match = matches.get(homeTeam);
         if (match == null) {
             throw new NotValidMatchException("Match not found for the home team: " + homeTeam);
         }
-        Match tempMatch = new Match(match);
-        tempMatch.updateScore(homeScore, awayScore);
-        validateMatch(tempMatch);
+
         match.updateScore(homeScore, awayScore);
+    }
+
+
+    private record ScoreHolder(@Min(value = 0, message = "Home score must be zero or positive") int homeScore,
+                               @Min(value = 0, message = "Away score must be zero or positive") int awayScore) {
+        private ScoreHolder(int homeScore, int awayScore) {
+            this.homeScore = homeScore;
+            this.awayScore = awayScore;
+        }
 
     }
 
@@ -51,8 +65,12 @@ public class Scoreboard {
         matches.remove(homeTeam);
     }
 
+    public void finishAllMatches(){
+        matches.clear();
+    }
+
     public List<Match> getMatches() {
-        return matches.values().stream().toList();
+        return new ArrayList<>(matches.values());
     }
 
     public List<Match> getMatchesSummary() {
