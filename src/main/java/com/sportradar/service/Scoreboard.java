@@ -2,25 +2,52 @@ package com.sportradar.service;
 
 import com.sportradar.model.Match;
 import com.sportradar.model.NotValidMatchException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 import java.util.*;
 
 public class Scoreboard {
     private final HashMap<String,Match> matches;
+    private final Validator validator; // Add a validator
+
     public Scoreboard() {
         this.matches = new LinkedHashMap<>();
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            this.validator = factory.getValidator();
+        }
     }
 
-    public void startMatch(String homeTeam, String awayTeam) {
+    public void startMatch(String homeTeam, String awayTeam) throws NotValidMatchException {
         Match match = new Match(homeTeam, awayTeam);
-        matches.put(homeTeam,match);
+        validateMatch(match);
+        matches.put(homeTeam, match);
+    }
+    private void validateMatch(Match match) throws NotValidMatchException {
+        Set<ConstraintViolation<Match>> violations = validator.validate(match);
+        if (!violations.isEmpty()) {
+            // Collect and throw the validation messages
+            StringBuilder message = new StringBuilder();
+            for (ConstraintViolation<Match> violation : violations) {
+                message.append(violation.getMessage()).append("; ");
+            }
+            throw new NotValidMatchException(message.toString());
+        }
     }
 
     public void updateScore(String homeTeam, int homeScore, int awayScore) throws NotValidMatchException {
-        if (!matches.containsKey(homeTeam)) {
+
+        Match match = matches.get(homeTeam);
+        if (match == null) {
             throw new NotValidMatchException("Match not found for the home team: " + homeTeam);
         }
-        matches.get(homeTeam).updateScore(homeScore, awayScore);
+        Match tempMatch = new Match(match);
+        tempMatch.updateScore(homeScore, awayScore);
+        validateMatch(tempMatch);
+        match.updateScore(homeScore, awayScore);
+
     }
 
     public void finishMatch(String homeTeam) {

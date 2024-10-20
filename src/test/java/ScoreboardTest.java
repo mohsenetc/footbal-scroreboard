@@ -1,24 +1,39 @@
 import com.sportradar.model.Match;
 import com.sportradar.model.NotValidMatchException;
 import com.sportradar.service.Scoreboard;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ScoreboardTest {
 
     private Scoreboard scoreboard;
+    private final Validator validator;
+
+
+    public ScoreboardTest() {
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            this.validator = factory.getValidator();
+        }
+    }
 
     @BeforeEach
     void setUp() {
         scoreboard = new Scoreboard();
+
     }
 
     @Test
+    @SneakyThrows
     void testStartNewMatch() {
         scoreboard.startMatch("Home Team", "Away Team");
         List<Match> matches = scoreboard.getMatches();
@@ -43,6 +58,7 @@ class ScoreboardTest {
     }
 
     @Test
+    @SneakyThrows
     void testFinishMatch() {
         scoreboard.startMatch("Home Team", "Away Team");
         scoreboard.finishMatch("Home Team");
@@ -52,9 +68,10 @@ class ScoreboardTest {
     }
 
     @Test
+    @SneakyThrows
     void testUpdateInvalidMatchShouldThrowException(){
-        scoreboard.startMatch("United Kingdom", "USA");
-        assertThrows(NotValidMatchException.class, () -> scoreboard.updateScore("United Emirates", 2, 3));
+        scoreboard.startMatch("UK", "USA");
+        assertThrows(NotValidMatchException.class, () -> scoreboard.updateScore("UAE", 2, 3));
     }
 
     @Test
@@ -84,4 +101,22 @@ class ScoreboardTest {
         assertEquals("Argentina 3 - Australia 1", summary.get(3).toString());
         assertEquals("Germany 2 - France 2", summary.get(4).toString());
     }
+
+    @Test
+    void testAwayTeamNameCannotBeBlank() {
+        Match match = new Match("UK", ""); // Away team name is blank
+
+        Set<ConstraintViolation<Match>> violations = validator.validate(match);
+
+        assertEquals(1, violations.size());
+        assertEquals("Away team name cannot be blank", violations.iterator().next().getMessage());
+    }
+
+    @Test
+    @SneakyThrows
+    void testHomeScoreMustBeZeroOrPositive() {
+        scoreboard.startMatch("UK", "USA");
+        assertThrows(NotValidMatchException.class, () -> scoreboard.updateScore("UK",-1,0));
+    }
+
 }

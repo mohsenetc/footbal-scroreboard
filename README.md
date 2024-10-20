@@ -13,6 +13,7 @@ This project is a simple Java library designed to manage and display live scores
 
 - Java 21
 - JUnit 5 (for testing)
+- Maven
 
 ## Getting Started
 
@@ -55,7 +56,7 @@ scoreboard.finishMatch("Home Team");
         System.out.println(match);
     }
 ```
-### Example
+## Example
 Here’s a complete example of using the library:
 
 ```java
@@ -79,19 +80,19 @@ Scoreboard scoreboard = new Scoreboard();
     }
 }
 ```
-### Running Tests
+## Running Tests
 To run the tests for this library, ensure you have JUnit 5 configured in your project, and then execute:
 
 ```bash
 mvn test
 ```
-### Assumptions
+## Assumptions
 - Each match is uniquely identified by the home team name.
 - The library does not implement a persistence layer; all data is stored in memory.
-### Contributing
+## Contributing
 Contributions are welcome! Please create a pull request or submit issues for improvements.
 
-### Next Steps
+## Next Steps
  - **Enhance Error Handling:** Consider adding error handling for cases like updating scores for non-existing matches.
  - **Improve Validation:** Validate team names and scores before processing.
  - **Add Additional Features:** Consider adding functionality for features like getting the list of finished matches or getting a specific match by team name.
