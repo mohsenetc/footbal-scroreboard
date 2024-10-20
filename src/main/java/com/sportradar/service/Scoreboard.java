@@ -12,24 +12,25 @@ import org.springframework.validation.Validator;
 
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class Scoreboard {
-    private final HashMap<String, Match> matches;
+    private final ConcurrentHashMap<String, Match> matches;
 
     @Autowired
     private Validator validator;
 
 
     public Scoreboard() {
-        this.matches = new LinkedHashMap<>();
+        this.matches = new ConcurrentHashMap<>();
     }
 
     public void startMatch(@Valid Match match) {
         matches.put(match.getHomeTeam(), match);
     }
 
-    public void updateScore(String homeTeam,
+    public synchronized void updateScore(String homeTeam,
                             @Min(value = 0, message = "Home score must be zero or positive") int homeScore,
                             @Min(value = 0, message = "Away score must be zero or positive") int awayScore)
             throws NotValidMatchException {
@@ -61,11 +62,11 @@ public class Scoreboard {
 
     }
 
-    public void finishMatch(String homeTeam) {
+    public synchronized void finishMatch(String homeTeam) {
         matches.remove(homeTeam);
     }
 
-    public void finishAllMatches(){
+    public synchronized void finishAllMatches(){
         matches.clear();
     }
 
