@@ -1,5 +1,7 @@
 import com.sportradar.model.Match;
+import com.sportradar.model.NotValidMatchException;
 import com.sportradar.service.Scoreboard;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +32,7 @@ class ScoreboardTest {
     }
 
     @Test
+    @SneakyThrows
     void testUpdateScore() {
         scoreboard.startMatch("Home Team", "Away Team");
         scoreboard.updateScore("Home Team", 2, 3);
@@ -49,6 +52,13 @@ class ScoreboardTest {
     }
 
     @Test
+    void testUpdateInvalidMatchShouldThrowException(){
+        scoreboard.startMatch("United Kingdom", "USA");
+        assertThrows(NotValidMatchException.class, () -> scoreboard.updateScore("United Emirates", 2, 3));
+    }
+
+    @Test
+    @SneakyThrows
     void testGetMatchesSummary() {
         scoreboard.startMatch("Mexico", "Canada");
         scoreboard.updateScore("Mexico", 0, 5);

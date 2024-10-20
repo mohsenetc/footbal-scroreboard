@@ -1,6 +1,7 @@
 package com.sportradar.service;
 
 import com.sportradar.model.Match;
+import com.sportradar.model.NotValidMatchException;
 
 import java.util.*;
 
@@ -15,7 +16,10 @@ public class Scoreboard {
         matches.put(homeTeam,match);
     }
 
-    public void updateScore(String homeTeam, int homeScore, int awayScore) {
+    public void updateScore(String homeTeam, int homeScore, int awayScore) throws NotValidMatchException {
+        if (!matches.containsKey(homeTeam)) {
+            throw new NotValidMatchException("Match not found for the home team: " + homeTeam);
+        }
         matches.get(homeTeam).updateScore(homeScore, awayScore);
     }
 

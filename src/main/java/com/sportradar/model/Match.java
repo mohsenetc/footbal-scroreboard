@@ -1,7 +1,10 @@
 package com.sportradar.model;
 
+import lombok.Getter;
 import java.time.LocalDateTime;
 
+
+@Getter
 public class Match {
     private final String homeTeam;
     private final String awayTeam;
@@ -17,29 +20,9 @@ public class Match {
         this.startTime = LocalDateTime.now();
     }
 
-    public String getHomeTeam() {
-        return homeTeam;
-    }
-
-    public String getAwayTeam() {
-        return awayTeam;
-    }
-
-    public int getHomeScore() {
-        return homeScore;
-    }
-
-    public int getAwayScore() {
-        return awayScore;
-    }
-
     public void updateScore(int homeScore, int awayScore) {
         this.homeScore = homeScore;
         this.awayScore = awayScore;
-    }
-
-    public LocalDateTime getStartTime() {
-        return startTime;
     }
 
     public int getTotalScore() {

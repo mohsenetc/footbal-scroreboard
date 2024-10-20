@@ -90,3 +90,8 @@ mvn test
 - The library does not implement a persistence layer; all data is stored in memory.
 ### Contributing
 Contributions are welcome! Please create a pull request or submit issues for improvements.
+
+### Next Steps
+ - **Enhance Error Handling:** Consider adding error handling for cases like updating scores for non-existing matches.
+ - **Improve Validation:** Validate team names and scores before processing.
+ - **Add Additional Features:** Consider adding functionality for features like getting the list of finished matches or getting a specific match by team name.
