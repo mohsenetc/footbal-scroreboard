@@ -4,24 +4,24 @@ import com.sportradar.model.Match;
 import com.sportradar.model.NotValidMatchException;
 import com.sportradar.service.Scoreboard;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
 class ScoreboardTest {
 
-    @Autowired
     private Scoreboard scoreboard;
 
-    @AfterEach
-    void cleanup(){
-        scoreboard.finishAllMatches();
+    @BeforeEach
+    void setUp() {
+        LocalValidatorFactoryBean validatorFactoryBean = new LocalValidatorFactoryBean();
+        validatorFactoryBean.afterPropertiesSet();
+        scoreboard = new Scoreboard(validatorFactoryBean);
     }
 
     @Test
@@ -58,6 +58,31 @@ class ScoreboardTest {
 
         List<Match> matches = scoreboard.getMatches();
         assertTrue(matches.isEmpty());
+    }
+
+    @Test
+    @SneakyThrows
+    void testFinishAllMatch() {
+        scoreboard.startMatch(new Match("Home Team", "Away Team"));
+        scoreboard.startMatch(new Match("UK", "US"));
+        scoreboard.finishAllMatches();
+
+        List<Match> matches = scoreboard.getMatches();
+        assertTrue(matches.isEmpty());
+    }
+
+    @Test
+    void testGetMatchHomeTeamAvailable(){
+        scoreboard.startMatch(new Match("IRAN", "UAE"));
+        Optional<Match> iran = scoreboard.getMatchByHomeTeam("IRAN");
+        assertTrue(iran.isPresent());
+    }
+
+    @Test
+    void testGetMatchHomeTeamNotAvailable(){
+        scoreboard.startMatch(new Match("USA", "UAE"));
+        Optional<Match> iran = scoreboard.getMatchByHomeTeam("UK");
+        assertTrue(iran.isEmpty());
     }
 
     @Test

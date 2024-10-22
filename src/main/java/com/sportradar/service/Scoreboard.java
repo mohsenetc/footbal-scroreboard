@@ -2,9 +2,9 @@ package com.sportradar.service;
 
 import com.sportradar.model.Match;
 import com.sportradar.model.NotValidMatchException;
+import com.sportradar.model.ScoreHolder;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -18,12 +18,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Scoreboard {
     private final ConcurrentHashMap<String, Match> matches;
 
-    @Autowired
-    private Validator validator;
+    private final Validator validator;
 
-
-    public Scoreboard() {
+    public Scoreboard(Validator validator) {
         this.matches = new ConcurrentHashMap<>();
+        this.validator = validator;
     }
 
     public void startMatch(@Valid Match match) {
@@ -53,15 +52,6 @@ public class Scoreboard {
     }
 
 
-    private record ScoreHolder(@Min(value = 0, message = "Home score must be zero or positive") int homeScore,
-                               @Min(value = 0, message = "Away score must be zero or positive") int awayScore) {
-        private ScoreHolder(int homeScore, int awayScore) {
-            this.homeScore = homeScore;
-            this.awayScore = awayScore;
-        }
-
-    }
-
     public synchronized void finishMatch(String homeTeam) {
         matches.remove(homeTeam);
     }
@@ -72,6 +62,10 @@ public class Scoreboard {
 
     public List<Match> getMatches() {
         return new ArrayList<>(matches.values());
+    }
+
+    public Optional<Match> getMatchByHomeTeam(String homeTeam) {
+        return Optional.ofNullable(matches.get(homeTeam));
     }
 
     public List<Match> getMatchesSummary() {
